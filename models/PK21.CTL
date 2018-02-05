@@ -1,0 +1,48 @@
+$PROB GABRIELSSON PK21
+$INPUT TIME AMT ADDL II DV MDV
+$DATA ../PK21NM.csv IGNORE=@
+$SUBR ADVAN13 TOL6
+$MODEL
+  COMP (DEPOT, DEFDOSE)
+  COMP (CENTRAL, DEFOBS)
+$PK
+  Ka    = THETA(1)
+  CLss  = THETA(2)
+  CLpre = THETA(3)
+  RKD   = THETA(4)
+  V     = THETA(5)
+  ALAG1 = THETA(6)
+  S2    = V/3796.94
+
+$DES
+  TBP  = 216
+  TBP2 = 512
+  
+  RKPRE = CLpre/V
+  RKSS  = CLss/V
+
+  K1 = RKPRE
+  K2 = RKSS - (RKSS - RKPRE)*exp(-RKD*(T - TBP))
+  AS = RKSS - (RKSS - RKPRE)*exp(-RKD*(TBP2 - TBP))
+  K3 = RKPRE - (RKPRE - AS)*exp(-RKD*(T - TBP2))
+
+  Ke = K1
+  IF (T .GE. TBP .AND. T .LT. TBP2) Ke = K2
+  IF (T .GE. TBP2) Ke = K3
+
+  DADT(1) = -Ka*A(1)
+  DADT(2) = Ka*A(1) - Ke*A(2)
+
+$ERROR
+  Y    = F + ERR(1)
+$THETA
+  (0.1, 3, 5)
+  (20, 140, 500)
+  (4, 40, 200)
+  (0, 0.005, 1)
+  (100, 1260, 3000)
+  (0, 0.7, 3)
+
+$OMEGA 1
+$EST MAX=9999
+$COV UNCOND PRINT=ERS

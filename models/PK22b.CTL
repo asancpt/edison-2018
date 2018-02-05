@@ -1,0 +1,42 @@
+$PROB GABRIELSSON PK22
+$INPUT TIME AMT RATE ADDL II DV MDV
+$DATA ../PK22NM.csv IGNORE=@
+$SUBR ADVAN13 TOL6
+$MODEL
+  COMP (CENTRAL, DEFDOSE, DEFOBS)
+  COMP (PERIPH)
+  COMP (ENZYME)
+$PK
+  V    = THETA(1)
+  CLs  = THETA(2)
+  K12  = THETA(3)
+  K21  = THETA(4)
+  Kout = THETA(5)
+  E0   = THETA(6)
+  S1   = V
+
+  IF (A_0FLG .EQ. 1) THEN
+    A_0(3) = E0
+  ENDIF
+
+$DES
+  C1 = A(1)/V
+  CL = CLs*(1 + A(3))
+  DADT(1) = -CL*C1 - K12*A(1) + K21*A(2) 
+  DADT(2) = K12*A(1) - K21*A(2)
+  DADT(3) = Kout*(E0 + C1) - Kout*A(3) 
+
+$ERROR
+  Y    = F + F*ERR(1)
+
+$THETA
+  (0, 155)
+  (0, 0.05)
+  (0, 0.5)
+  (0, 1.25)
+  (0, 0.03)
+  (0, 100)
+
+$OMEGA 0.1
+$EST MAX=9999
+$COV UNCOND PRINT=ERS

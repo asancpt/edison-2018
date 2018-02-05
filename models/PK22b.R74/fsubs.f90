@@ -1,0 +1,379 @@
+      MODULE NMPRD4P
+      USE SIZES, ONLY: DPSIZE
+      USE NMPRD4,ONLY: VRBL
+      IMPLICIT NONE
+      SAVE
+      REAL(KIND=DPSIZE), DIMENSION (:),POINTER ::COM
+      REAL(KIND=DPSIZE), POINTER ::V,CLs,K12,K21,Kout,E0,S1,C1,CL,Y
+      REAL(KIND=DPSIZE), POINTER ::E000013,E000014,E000011,F000087
+      REAL(KIND=DPSIZE), POINTER ::F000086,F000088,F000089,E000030
+      REAL(KIND=DPSIZE), POINTER ::E000031,F000098,F000099,E000035
+      REAL(KIND=DPSIZE), POINTER ::E000036,F000103,F000104,F000105
+      CONTAINS
+      SUBROUTINE ASSOCNMPRD4
+      COM=>VRBL
+      V=>COM(000001);CLs=>COM(000002);K12=>COM(000003)
+      K21=>COM(000004);Kout=>COM(000005);E0=>COM(000006)
+      S1=>COM(000007);C1=>COM(000008);CL=>COM(000009);Y=>COM(000010)
+      E000013=>COM(000011);E000014=>COM(000012);E000011=>COM(000013)
+      F000087=>COM(000014);F000086=>COM(000015);F000088=>COM(000016)
+      F000089=>COM(000017);E000030=>COM(000018);E000031=>COM(000019)
+      F000098=>COM(000020);F000099=>COM(000021);E000035=>COM(000022)
+      E000036=>COM(000023);F000103=>COM(000024);F000104=>COM(000025)
+      F000105=>COM(000026)
+      END SUBROUTINE ASSOCNMPRD4
+      END MODULE NMPRD4P
+      SUBROUTINE MODEL (IDNO,NCM,NPAR,IR,IATT,LINK)                           
+      USE PRMOD_CHAR, ONLY: NAME                                              
+      USE SIZES,     ONLY: DPSIZE,ISIZE,SD
+      USE PRDIMS,    ONLY: GPRD,HPRD,GERD,HERD,GPKD
+      INTEGER(KIND=ISIZE) :: IDNO,NCM,NPAR,IR,IATT,LINK,I,J                   
+      DIMENSION :: IATT(IR,*),LINK(IR,*)                                      
+      SAVE
+      INTEGER(KIND=ISIZE), DIMENSION (3,7) :: MOD
+      CHARACTER(LEN=SD), DIMENSION(3) :: CMOD
+      DATA (MOD(I,  1),I=  1,  3)/&
+      1,1,1 /
+      DATA (MOD(I,  2),I=  1,  3)/&
+      1,1,1 /
+      DATA (MOD(I,  3),I=  1,  3)/&
+      1,1,1 /
+      DATA (MOD(I,  4),I=  1,  3)/&
+      1,0,0 /
+      DATA (MOD(I,  5),I=  1,  3)/&
+      1,0,0 /
+      DATA (MOD(I,  6),I=  1,  3)/&
+      0,0,0 /
+      DATA (MOD(I,  7),I=  1,  3)/&
+      0,0,0 /
+      DATA (CMOD(I),I=  1,  3) &
+      /'CENTRAL','PERIPH','ENZYME'/
+      FORALL (I=1:3) NAME(I)=CMOD(I)
+      FORALL (I=1:3,J=1:7) IATT(I,J)=MOD(I,J)
+      IDNO=9999                                                               
+      NCM=  3
+      NPAR=006
+      RETURN
+      END
+      SUBROUTINE PK(ICALL,IDEF,THETA,IREV,EVTREC,NVNT,INDXS,IRGG,GG,NETAS)      
+      USE NMPRD4P
+      USE SIZES,     ONLY: DPSIZE,ISIZE
+      USE PRDIMS,    ONLY: GPRD,HPRD,GERD,HERD,GPKD
+      USE PRDATA, ONLY: MXSTEP=>MXSTP01
+      USE NMPRD_REAL,ONLY: ETA,EPS                                            
+      USE NMPRD_INT, ONLY: MSEC=>ISECDER,MFIRST=>IFRSTDER,COMACT,COMSAV,IFIRSTEM
+      USE NMPRD_INT, ONLY: MDVRES,ETASXI,NPDE_MODE,NOFIRSTDERCODE
+      USE NMPRD_REAL, ONLY: DV_LOQ,CDF_L
+      USE NMPRD_INT, ONLY: IQUIT
+      USE PROCM_INT, ONLY: A_0FLG
+      USE PRMOD_REAL,ONLY: A_0,DA_0,D2A_0
+      USE NMBAYES_REAL, ONLY: LDF                                             
+      IMPLICIT REAL(KIND=DPSIZE) (A-Z)                                          
+      REAL(KIND=DPSIZE) :: EVTREC                                               
+      SAVE
+      INTEGER(KIND=ISIZE) :: FIRSTEM
+      INTEGER(KIND=ISIZE) :: ICALL,IDEF,IREV,NVNT,INDXS,IRGG,NETAS              
+      DIMENSION :: IDEF(7,*),THETA(*),EVTREC(IREV,*),INDXS(*),GG(IRGG,GPKD+1,*) 
+      FIRSTEM=IFIRSTEM
+      IF (ICALL <= 1) THEN                                                      
+      CALL ASSOCNMPRD4
+      IDEF(   1,0001)=  -9
+      IDEF(   1,0002)=  -1
+      IDEF(   1,0003)=   1
+      IDEF(   1,0004)=   0
+      IDEF(   2,0003)=   0
+      IDEF(   2,0004)=   0
+      IDEF(   3,0001)=   7
+      RETURN                                                                    
+      ENDIF                                                                     
+ !  level            0
+      V=THETA(001) 
+      CLs=THETA(002) 
+      K12=THETA(003) 
+      K21=THETA(004) 
+      Kout=THETA(005) 
+      E0=THETA(006) 
+      S1=V 
+      IF(A_0FLG == 1)THEN 
+      A_0(3)=E0 
+      ENDIF 
+      P000001=V 
+      P000002=CLs 
+      P000003=K12 
+      P000004=K21 
+      P000005=E0 
+      P000006=Kout 
+      IF (FIRSTEM == 1) THEN
+      GG(0001,1,1)=P000001
+      GG(0002,1,1)=P000002
+      GG(0003,1,1)=P000003
+      GG(0004,1,1)=P000004
+      GG(0005,1,1)=P000005
+      GG(0006,1,1)=P000006
+      GG(0007,1,1)=S1
+      ELSE
+      GG(0001,1,1)=P000001
+      GG(0002,1,1)=P000002
+      GG(0003,1,1)=P000003
+      GG(0004,1,1)=P000004
+      GG(0005,1,1)=P000005
+      GG(0006,1,1)=P000006
+      GG(0007,1,1)=S1
+      ENDIF
+      RETURN
+      END
+      SUBROUTINE ERROR (ICALL,IDEF,THETA,IREV,EVTREC,NVNT,INDXS,F,G,HH)       
+      USE NMPRD4P
+      USE SIZES,     ONLY: DPSIZE,ISIZE
+      USE PRDIMS,    ONLY: GPRD,HPRD,GERD,HERD,GPKD
+      USE NMPRD_REAL,ONLY: ETA,EPS                                            
+      USE NMPRD_INT, ONLY: MSEC=>ISECDER,MFIRST=>IFRSTDER,IQUIT,IFIRSTEM
+      USE NMPRD_INT, ONLY: MDVRES,ETASXI,NPDE_MODE,NOFIRSTDERCODE
+      USE NMPRD_REAL, ONLY: DV_LOQ,CDF_L
+      USE PROCM_INT, ONLY: NEWIND=>PNEWIF                                       
+      IMPLICIT REAL(KIND=DPSIZE) (A-Z)                                        
+      REAL(KIND=DPSIZE) :: EVTREC                                             
+      SAVE
+      INTEGER(KIND=ISIZE) :: ICALL,IDEF,IREV,NVNT,INDXS                       
+      DIMENSION :: IDEF(*),THETA(*),EVTREC(IREV,*),INDXS(*)                   
+      REAL(KIND=DPSIZE) :: G(GERD,*),HH(HERD,*)                               
+      INTEGER(KIND=ISIZE) :: FIRSTEM
+      FIRSTEM=IFIRSTEM
+      IF (ICALL <= 1) THEN                                                    
+      CALL ASSOCNMPRD4
+      IDEF(2)=2
+      IDEF(1)=1
+      HH(1,1)=1.0D0
+      IDEF(3)=000
+      RETURN
+      ENDIF
+      IF (ICALL == 4) THEN
+      IF (NEWIND <= 1) THEN
+      CALL SIMETA(ETA)
+      IF (IQUIT == 1) RETURN
+      ENDIF
+      ENDIF
+ !  level            0
+      Y=F+F*ETA(001) 
+      IF (FIRSTEM == 1) THEN !1
+      ENDIF !1
+      F=Y
+      RETURN
+      END
+      SUBROUTINE TOL(NRD,ANRD,NRDC,ANRDC)
+      USE SIZES,     ONLY: ISIZE
+      INTEGER(KIND=ISIZE) :: NRD(0:*), ANRD(0:*), NRDC(0:*), ANRDC(0:*)
+      NRD(1)=6 
+      RETURN
+      END
+      SUBROUTINE DES (A,P,T,DADT,IR,DA,DP,DT)                                 
+      USE NMPRD4P
+      USE SIZES,     ONLY: DPSIZE,ISIZE
+      USE PRDIMS,    ONLY: GPRD,HPRD,GERD,HERD,GPKD
+      USE NMPRD_INT, ONLY: IERPRD,NETEXT,IQUIT                                
+      USE NMPRD_CHAR,ONLY: ETEXT                                              
+      USE NMPRD_INT, ONLY: MSEC=>ISECDER,MFIRST=>IFRSTDER,IFIRSTEM,IFIRSTEMJAC
+      USE PRCOM_INT, ONLY: MITER
+      USE NMPRD_INT, ONLY: MDVRES,ETASXI,NPDE_MODE,NOFIRSTDERCODE
+      USE NMPRD_REAL, ONLY: DV_LOQ,CDF_L
+      USE PRMOD_INT, ONLY: ICALL=>ICALLD,IDEFD,IDEFA
+      IMPLICIT REAL(KIND=DPSIZE) (A-Z)                                        
+      SAVE
+      INTEGER(KIND=ISIZE) :: IR                                               
+      DIMENSION :: A(*),P(*),DADT(*),DA(IR,*),DP(IR,*),DT(*)                  
+      INTEGER(KIND=ISIZE) :: FIRSTEM,IFIRSTEMJACIN
+      IF(MITER==1.OR.MITER==4) IFIRSTEM=1
+      FIRSTEM=IFIRSTEM
+      IFIRSTEMJACIN=IFIRSTEMJAC
+      IF(NOFIRSTDERCODE/=1) THEN
+      IFIRSTEMJAC=FIRSTEM
+      ELSE
+      IFIRSTEMJAC=0
+      ENDIF
+      IF(IFIRSTEMJACIN==-2) RETURN
+      IF (ICALL == 1) THEN
+      CALL ASSOCNMPRD4
+      IDEFD(1)=  0
+      IDEFD(2)=0
+      DA(   1,1)=0000014280
+      DA(   2,1)=0000014399
+      DA(   3,1)=0000014518
+      DA(   4,1)=0000028441
+      DA(   5,1)=0000028560
+      DA(   6,1)=0000042602
+      DA(   7,1)=0000042840
+      DA(   8,1)=0000014519
+      DA(   9,1)=0000014283
+      DA(  10,1)=0000000000
+      DP(   1,1)=0000014280
+      DP(   2,1)=0000014399
+      DP(   3,1)=0000014518
+      DP(   4,1)=0000014637
+      DP(   5,1)=0000028679
+      DP(   6,1)=0000028798
+      DP(   7,1)=0000042602
+      DP(   8,1)=0000043078
+      DP(   9,1)=0000043197
+      DP(  10,1)=0000000000
+      DT(   1)=0000000000
+      RETURN
+      ENDIF
+ !  level            0
+ !  level            0
+      C1=A(1)/P(001) 
+      B000006=1.D0+A(3) 
+      CL=P(002)*B000006 
+      DADT(1)=-CL*C1-P(003)*A(1)+P(004)*A(2) 
+      DADT(2)=P(003)*A(1)-P(004)*A(2) 
+      B000011=P(005)+C1 
+      DADT(3)=P(006)*B000011-P(006)*A(3) 
+      IF (FIRSTEM == 1) THEN ! 1
+      B000001=1.D0/P(001) 
+      B000002=-A(1)/P(001)/P(001) 
+!                      E000011 = DERIVATIVE OF DADT(1) W.R.T. A(003)
+      E000011=-C1*P(002) 
+!                      E000012 = DERIVATIVE OF DADT(1) W.R.T. A(001)
+      E000012=-CL*B000001 
+!                      E000013 = DERIVATIVE OF DADT(1) W.R.T. A(001)
+      E000013=-P(003)+E000012 
+!                      E000014 = DERIVATIVE OF DADT(1) W.R.T. A(002)
+      E000014=P(004) 
+!                      F000086 = DERIVATIVE OF DADT(1) W.R.T. P(002)
+      F000086=-C1*B000006 
+!                      F000087 = DERIVATIVE OF DADT(1) W.R.T. P(001)
+      F000087=-CL*B000002 
+!                      F000088 = DERIVATIVE OF DADT(1) W.R.T. P(003)
+      F000088=-A(1) 
+!                      F000089 = DERIVATIVE OF DADT(1) W.R.T. P(004)
+      F000089=A(2) 
+!                      E000030 = DERIVATIVE OF DADT(2) W.R.T. A(001)
+      E000030=P(003) 
+!                      E000031 = DERIVATIVE OF DADT(2) W.R.T. A(002)
+      E000031=-P(004) 
+!                      F000098 = DERIVATIVE OF DADT(2) W.R.T. P(003)
+      F000098=A(1) 
+!                      F000099 = DERIVATIVE OF DADT(2) W.R.T. P(004)
+      F000099=-A(2) 
+!                      E000035 = DERIVATIVE OF DADT(3) W.R.T. A(001)
+      E000035=P(006)*B000001 
+!                      E000036 = DERIVATIVE OF DADT(3) W.R.T. A(003)
+      E000036=-P(006) 
+!                      F000102 = DERIVATIVE OF DADT(3) W.R.T. P(006)
+      F000102=B000011 
+!                      F000103 = DERIVATIVE OF DADT(3) W.R.T. P(001)
+      F000103=P(006)*B000002 
+!                      F000104 = DERIVATIVE OF DADT(3) W.R.T. P(005)
+      F000104=P(006) 
+!                      F000105 = DERIVATIVE OF DADT(3) W.R.T. P(006)
+      F000105=-A(3)+F000102 
+      ENDIF !1
+      IF (MSEC == 1) THEN 
+!                      E000017 = DERIVATIVE OF E000011 W.R.T. A(001)
+      E000017=-P(002)*B000001 
+!                      E000018 = DERIVATIVE OF E000012 W.R.T. A(003)
+      E000018=-B000001*P(002) 
+!                      E000019 = DERIVATIVE OF E000013 W.R.T. A(003)
+      E000019=E000018 
+      ENDIF !msec
+      IF (FIRSTEM == 1) THEN !2
+      DA(   1,1)=E000013
+      DA(   2,1)=E000014
+      DA(   3,1)=E000011
+      DA(   4,1)=E000030
+      DA(   5,1)=E000031
+      DA(   6,1)=E000035
+      DA(   7,1)=E000036
+      DP(   1,1)=F000087
+      DP(   2,1)=F000086
+      DP(   3,1)=F000088
+      DP(   4,1)=F000089
+      DP(   5,1)=F000098
+      DP(   6,1)=F000099
+      DP(   7,1)=F000103
+      DP(   8,1)=F000104
+      DP(   9,1)=F000105
+      ENDIF !2
+      IF (MSEC == 1) THEN
+      DA(   8,1)=E000017
+      DA(   9,1)=E000019
+      ENDIF
+      RETURN
+      END
+      SUBROUTINE FSIZESR(NAME_FSIZES,F_SIZES)
+      USE SIZES, ONLY: ISIZE
+      INTEGER(KIND=ISIZE), DIMENSION(*) :: F_SIZES
+      CHARACTER(LEN=*),    DIMENSION(*) :: NAME_FSIZES
+      NAME_FSIZES(01)='LTH'; F_SIZES(01)=6
+      NAME_FSIZES(02)='LVR'; F_SIZES(02)=2
+      NAME_FSIZES(03)='LVR2'; F_SIZES(03)=0
+      NAME_FSIZES(04)='LPAR'; F_SIZES(04)=8
+      NAME_FSIZES(05)='LPAR3'; F_SIZES(05)=0
+      NAME_FSIZES(06)='NO'; F_SIZES(06)=0
+      NAME_FSIZES(07)='MMX'; F_SIZES(07)=1
+      NAME_FSIZES(08)='LNP4'; F_SIZES(08)=0
+      NAME_FSIZES(09)='LSUPP'; F_SIZES(09)=1
+      NAME_FSIZES(10)='LIM7'; F_SIZES(10)=0
+      NAME_FSIZES(11)='LWS3'; F_SIZES(11)=0
+      NAME_FSIZES(12)='MAXIDS'; F_SIZES(12)=37
+      NAME_FSIZES(13)='LIM1'; F_SIZES(13)=0
+      NAME_FSIZES(14)='LIM2'; F_SIZES(14)=0
+      NAME_FSIZES(15)='LIM3'; F_SIZES(15)=0
+      NAME_FSIZES(16)='LIM4'; F_SIZES(16)=0
+      NAME_FSIZES(17)='LIM5'; F_SIZES(17)=0
+      NAME_FSIZES(18)='LIM6'; F_SIZES(18)=0
+      NAME_FSIZES(19)='LIM8'; F_SIZES(19)=0
+      NAME_FSIZES(20)='LIM10'; F_SIZES(20)=0
+      NAME_FSIZES(21)='LIM11'; F_SIZES(21)=0
+      NAME_FSIZES(22)='LIM13'; F_SIZES(22)=0
+      NAME_FSIZES(23)='LIM15'; F_SIZES(23)=0
+      NAME_FSIZES(24)='LIM16'; F_SIZES(24)=0
+      NAME_FSIZES(25)='MAXRECID'; F_SIZES(25)=0
+      NAME_FSIZES(26)='PC'; F_SIZES(26)=0
+      NAME_FSIZES(27)='PCT'; F_SIZES(27)=1
+      NAME_FSIZES(28)='PIR'; F_SIZES(28)=10
+      NAME_FSIZES(29)='PD'; F_SIZES(29)=9
+      NAME_FSIZES(30)='PAL'; F_SIZES(30)=0
+      NAME_FSIZES(31)='MAXFCN'; F_SIZES(31)=0
+      NAME_FSIZES(32)='MAXIC'; F_SIZES(32)=0
+      NAME_FSIZES(33)='PG'; F_SIZES(33)=0
+      NAME_FSIZES(34)='NPOPMIXMAX'; F_SIZES(34)=0
+      NAME_FSIZES(35)='MAXOMEG'; F_SIZES(35)=1
+      NAME_FSIZES(36)='MAXPTHETA'; F_SIZES(36)=7
+      NAME_FSIZES(37)='MAXITER'; F_SIZES(37)=20
+      NAME_FSIZES(38)='ISAMPLEMAX'; F_SIZES(38)=0
+      NAME_FSIZES(39)='DIMTMP'; F_SIZES(39)=0
+      NAME_FSIZES(40)='DIMCNS'; F_SIZES(40)=0
+      NAME_FSIZES(41)='DIMNEW'; F_SIZES(41)=0
+      NAME_FSIZES(42)='PDT'; F_SIZES(42)=1
+      NAME_FSIZES(43)='LADD_MAX'; F_SIZES(43)=0
+      NAME_FSIZES(44)='MAXSIDL'; F_SIZES(44)=0
+      NAME_FSIZES(45)='NTT'; F_SIZES(45)=6
+      NAME_FSIZES(46)='NOMEG'; F_SIZES(46)=1
+      NAME_FSIZES(47)='NSIGM'; F_SIZES(47)=0
+      NAME_FSIZES(48)='PPDT'; F_SIZES(48)=1
+      RETURN
+      END SUBROUTINE FSIZESR
+      SUBROUTINE MUMODEL2(THETA,MU_,ICALL,IDEF,NEWIND,&
+      EVTREC,DATREC,IREV,NVNT,INDXS,F,G,H,IRGG,GG,NETAS)
+      USE NMPRD4P
+      USE SIZES,     ONLY: DPSIZE,ISIZE
+      USE PRDIMS,    ONLY: GPRD,HPRD,GERD,HERD,GPKD
+      USE PRDATA, ONLY: MXSTEP=>MXSTP01
+      USE NMPRD_REAL,ONLY: ETA,EPS
+      USE NMPRD_INT, ONLY: MSEC=>ISECDER,MFIRST=>IFRSTDER,COMACT,COMSAV,IFIRSTEM
+      USE NMPRD_INT, ONLY: MDVRES,ETASXI,NPDE_MODE,NOFIRSTDERCODE
+      USE NMPRD_REAL, ONLY: DV_LOQ,CDF_L
+      USE NMPRD_INT, ONLY: IQUIT
+      USE PROCM_INT, ONLY: A_0FLG
+      USE PRMOD_REAL,ONLY: A_0,DA_0,D2A_0
+      USE NMBAYES_REAL, ONLY: LDF
+      IMPLICIT REAL(KIND=DPSIZE) (A-Z)
+      REAL(KIND=DPSIZE)   :: MU_(*)
+      REAL(KIND=DPSIZE) :: EVTREC
+      SAVE
+      INTEGER(KIND=ISIZE) :: FIRSTEM
+      INTEGER(KIND=ISIZE) :: ICALL,IDEF,IREV,NVNT,INDXS,IRGG,NETAS
+      DIMENSION :: IDEF(7,*),THETA(*),EVTREC(IREV,*),INDXS(*),GG(IRGG,GPKD+1,*)
+      RETURN
+      END
+
