@@ -203,8 +203,8 @@ REPORTED OBJECTIVE FUNCTION DOES NOT CONTAIN CONSTANT
 TOTAL EFFECTIVE ETAS (NIND*NETA):                            23
 
 #TERE:
-Elapsed estimation  time in seconds:     1.78
-Elapsed covariance  time in seconds:     0.69
+Elapsed estimation  time in seconds:     1.48
+Elapsed covariance  time in seconds:     0.58
 Elapsed postprocess time in seconds:     0.00
 
 
@@ -470,5 +470,5 @@ TH 6   -3.05E+01 -3.11E+00 -1.85E+01 -1.40E+04  4.87E-02  1.72E+02
 
 OM11   -8.19E-01 -7.88E-02 -1.93E+00 -3.71E+02  3.41E-03  2.35E+00  1.16E+00
 
-Elapsed finaloutput time in seconds:     0.01
-#CPUT: Total CPU Time in Seconds,        2.484
+Elapsed finaloutput time in seconds:     0.02
+#CPUT: Total CPU Time in Seconds,        2.122

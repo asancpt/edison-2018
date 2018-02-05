@@ -1,5 +1,5 @@
-2017-10-06 
-00:29
+2018-02-05 
+오후 05:02
 $PROB GABRIELSSON PK21
 $INPUT TIME AMT ADDL II DV MDV
 $DATA ../PK21NM.csv IGNORE=@
@@ -57,9 +57,9 @@ NM-TRAN MESSAGES
   NONMEM RUN CANNOT BE PARALLELIZED.
   
 License Registered to: Asan Medical Center
-Expiration Date:    14 DEC 2017
-Current Date:        6 OCT 2017
-Days until program expires :  68
+Expiration Date:    14 DEC 2018
+Current Date:        5 FEB 2018
+Days until program expires : 309
 1NONLINEAR MIXED EFFECTS MODEL PROGRAM (NONMEM) VERSION 7.4.1
  ORIGINALLY DEVELOPED BY STUART BEAL, LEWIS SHEINER, AND ALISON BOECKMANN
  CURRENT DEVELOPERS ARE ROBERT BAUER, ICON DEVELOPMENT SOLUTIONS,
@@ -244,8 +244,8 @@ Days until program expires :  68
  TOTAL EFFECTIVE ETAS (NIND*NETA):                            23
   
  #TERE:
- Elapsed estimation  time in seconds:     1.78
- Elapsed covariance  time in seconds:     0.69
+ Elapsed estimation  time in seconds:     1.48
+ Elapsed covariance  time in seconds:     0.58
  Elapsed postprocess time in seconds:     0.00
 1
  
@@ -550,8 +550,8 @@ Days until program expires :  68
  OM11
 +       -8.19E-01 -7.88E-02 -1.93E+00 -3.71E+02  3.41E-03  2.35E+00  1.16E+00
  
- Elapsed finaloutput time in seconds:     0.01
- #CPUT: Total CPU Time in Seconds,        2.484
+ Elapsed finaloutput time in seconds:     0.02
+ #CPUT: Total CPU Time in Seconds,        2.122
 Stop Time: 
-2017-10-06 
-00:29
+2018-02-05 
+오후 05:03
